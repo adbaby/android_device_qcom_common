@@ -7,6 +7,8 @@ ifeq ($(LOCAL_MODULE_PATH),)
   LOCAL_MODULE_PATH := $(TARGET_OUT)/lib/modules
 endif
 
+local_relative_path := $(shell basename `dirname $(LOCAL_PATH)`)/$(shell basename $(LOCAL_PATH))
+
 # Set the default Kbuild file path to LOCAL_PATH
 KBUILD_FILE := $(strip $(KBUILD_FILE))
 ifeq ($(KBUILD_FILE),)
@@ -43,7 +45,7 @@ KBUILD_TARGET := $(strip            \
 # by the kernel build system. Ideally this would be the same
 # directory as LOCAL_BUILT_MODULE, but because we're using
 # relative paths for both O= and M=, we don't have much choice
-KBUILD_OUT_DIR := $(TARGET_OUT_INTERMEDIATES)/$(LOCAL_PATH)
+KBUILD_OUT_DIR := $(TARGET_OUT_INTERMEDIATES)/$(local_relative_path)
 
 # Path to the intermediate location where the kernel build
 # system creates the kernel module.
@@ -118,7 +120,7 @@ $(KBUILD_TARGET): kbuild_options := $(KBUILD_OPTIONS)
 $(KBUILD_TARGET): $(TARGET_PREBUILT_INT_KERNEL)
 	@mkdir -p $(kbuild_out_dir)
 	$(hide) cp -f $(local_path)/Kbuild $(kbuild_out_dir)/Kbuild
-	$(MAKE) -C $(TARGET_KERNEL_SOURCE) M=../$(local_path) O=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=arm-eabi- modules $(kbuild_options)
+	$(MAKE) -C $(TARGET_KERNEL_SOURCE) M=../$(local_relative_path) O=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=arm-eabi- modules $(kbuild_options)
 
 # Once the KBUILD_OPTIONS variable has been used for the target
 # that's specific to the LOCAL_PATH, clear it. If this isn't done,
